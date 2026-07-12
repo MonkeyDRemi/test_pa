@@ -1,0 +1,6 @@
+rules:
+  python:
+    critical_functions: ["eval", "exec", "system", "popen", "subprocess"]
+  php:
+    critical_functions: ["eval", "exec", "shell_exec", "system", "passthru", "proc_open", "popen"]
+    sql_sinks: ["mysqli_query", "mysql_query", "pg_query", "sqlite_query"]

@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block title %}APSA — Erreur{% endblock %}
+{% block content %}
+<div style="text-align:center;padding:80px 0">
+  <div style="font-size:48px;margin-bottom:16px">⚠</div>
+  <div style="font-size:18px;font-weight:600;color:var(--red);margin-bottom:8px">Erreur</div>
+  <div style="color:var(--text-dim);font-size:13px;margin-bottom:24px">{{ message }}</div>
+  <a href="{{ url_for('index') }}" class="btn btn-primary">↩ Retour à l'accueil</a>
+</div>
+{% endblock %}

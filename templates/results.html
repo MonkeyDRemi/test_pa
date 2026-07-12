@@ -1,0 +1,359 @@
+{% extends "base.html" %}
+{% block title %}APSA — Résultats{% endblock %}
+
+{% block extra_styles %}
+.results-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+.results-title { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+.results-meta  { color: var(--text-dim); font-size: 12px; font-family: var(--mono); }
+
+.score-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 28px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  min-width: 220px;
+}
+.grade-circle {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  border: 3px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 26px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.grade-A { color: var(--green);  border-color: var(--green);  }
+.grade-B { color: var(--yellow); border-color: var(--yellow); }
+.grade-C { color: var(--orange); border-color: var(--orange); }
+.grade-D { color: var(--red);    border-color: var(--red);    }
+.grade-F { color: var(--red);    border-color: var(--red-dark); background: #1a0505; }
+
+.score-info { line-height: 1.4; }
+.score-num  { font-family: var(--mono); font-size: 22px; font-weight: 700; }
+.score-sub  { color: var(--text-dim); font-size: 11px; margin-top: 2px; }
+.score-summary { font-size: 12px; color: var(--text-dim); margin-top: 6px; max-width: 200px; }
+
+.stats-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.stat-pill {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.stat-count    { font-family: var(--mono); font-weight: 700; font-size: 15px; }
+.stat-CRITICAL { color: var(--red); }
+.stat-HIGH     { color: var(--orange); }
+.stat-MEDIUM   { color: var(--yellow); }
+.stat-LOW      { color: var(--green); }
+
+.warn-box {
+  background: #1f1700;
+  border: 1px solid #5a3e00;
+  border-radius: 6px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  font-size: 12px;
+  color: var(--yellow);
+}
+.warn-box summary { cursor: pointer; font-weight: 600; }
+.warn-box ul { margin: 8px 0 0 16px; }
+.warn-box li { margin-top: 4px; font-family: var(--mono); }
+
+.filters {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.filter-btn {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text-dim);
+  transition: all .15s;
+}
+.filter-btn.active { border-color: var(--cyan); color: var(--cyan); background: #0d1f33; }
+.filter-label { color: var(--text-dim); font-size: 12px; margin-right: 4px; }
+
+.table-wrap {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.vuln-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.vuln-table th {
+  text-align: left;
+  padding: 10px 12px;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg2);
+}
+.vuln-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.vuln-table tr:last-child td { border-bottom: none; }
+.vuln-table tbody tr:hover td { background: var(--bg3); }
+
+.td-file { font-family: var(--mono); font-size: 12px; color: var(--cyan); white-space: nowrap; }
+.td-line { font-family: var(--mono); font-size: 12px; color: var(--text-dim); text-align: right; }
+.td-rule { font-family: var(--mono); font-size: 11px; color: var(--text-dim); }
+
+.ai-toggle-btn {
+  margin-top: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--cyan);
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: var(--sans);
+}
+.ai-toggle-btn:hover { text-decoration: underline; }
+
+.ai-panel {
+  display: none;
+  margin-top: 10px;
+  background: var(--bg);
+  border: 1px solid #1e3a5f;
+  border-radius: 6px;
+  padding: 14px;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.ai-panel.open { display: block; }
+.ai-panel-section { margin-bottom: 10px; }
+.ai-panel-section:last-child { margin-bottom: 0; }
+.ai-panel-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--cyan);
+  margin-bottom: 4px;
+}
+.ai-panel pre {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 10px;
+  font-family: var(--mono);
+  font-size: 11px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  color: var(--text-dim);
+  margin: 0;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 64px 32px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.empty-icon  { font-size: 48px; margin-bottom: 16px; }
+.empty-title { font-size: 18px; font-weight: 600; color: var(--green); margin-bottom: 8px; }
+.empty-body  { color: var(--text-dim); font-size: 13px; }
+
+.ai-err-box {
+  background: #1a0505;
+  border: 1px solid var(--red-dark);
+  border-radius: 6px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: var(--red);
+  margin-bottom: 16px;
+}
+
+.bottom-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 28px;
+  flex-wrap: wrap;
+}
+{% endblock %}
+
+{% block content %}
+{% set by_sev = score.by_severity %}
+
+<div class="results-header">
+  <div>
+    <div class="results-title">Résultats du scan</div>
+    <div class="results-meta">
+      {{ file_count }} fichier{{ 's' if file_count > 1 else '' }} analysé{{ 's' if file_count > 1 else '' }}
+      &nbsp;·&nbsp; {{ scanned_at }}
+      &nbsp;·&nbsp; {{ vulns|length }} vulnérabilité{{ 's' if vulns|length != 1 else '' }}
+      {% if ai_enabled %}&nbsp;·&nbsp; 🤖 IA activée{% endif %}
+    </div>
+  </div>
+
+  <div class="score-card">
+    <div class="grade-circle grade-{{ score.grade }}">{{ score.grade }}</div>
+    <div class="score-info">
+      <div class="score-num">{{ score.score }}<span style="font-size:13px;color:var(--text-dim)">/100</span></div>
+      <div class="score-sub">Score de risque</div>
+      <div class="score-summary">{{ score.summary }}</div>
+    </div>
+  </div>
+</div>
+
+<!-- Warnings parsers JS/PHP -->
+{% if warnings %}
+<details class="warn-box">
+  <summary>⚠ {{ warnings|length }} avertissement{{ 's' if warnings|length > 1 else '' }} de scan</summary>
+  <ul>
+    {% for w in warnings %}<li>{{ w }}</li>{% endfor %}
+  </ul>
+</details>
+{% endif %}
+
+<!-- Erreur IA globale -->
+{% if ai_error %}
+<div class="ai-err-box">🤖 Erreur Gemini : {{ ai_error }}</div>
+{% endif %}
+
+<!-- Stats pills -->
+<div class="stats-bar">
+  {% for sev in ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'] %}
+  {% if by_sev.get(sev, 0) > 0 %}
+  <div class="stat-pill">
+    <span class="stat-count stat-{{ sev }}">{{ by_sev[sev] }}</span>
+    <span style="color:var(--text-dim)">{{ sev }}</span>
+  </div>
+  {% endif %}
+  {% endfor %}
+  {% if vulns|length == 0 %}
+  <div class="stat-pill"><span class="stat-count stat-LOW">0</span> <span style="color:var(--text-dim)">vulnérabilité</span></div>
+  {% endif %}
+</div>
+
+{% if vulns %}
+
+<div class="filters">
+  <span class="filter-label">Filtrer :</span>
+  <button class="filter-btn active" onclick="filterTable('ALL', this)">Tout</button>
+  {% for sev in ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'] %}
+  {% if by_sev.get(sev, 0) > 0 %}
+  <button class="filter-btn" onclick="filterTable('{{ sev }}', this)">{{ sev }}</button>
+  {% endif %}
+  {% endfor %}
+</div>
+
+<div class="table-wrap">
+  <table class="vuln-table" id="vuln-table">
+    <thead>
+      <tr>
+        <th>Fichier</th>
+        <th style="text-align:right">Ligne</th>
+        <th>Gravité</th>
+        <th>Règle</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for v in vulns %}
+      {% set advice = ai_advices.get(v.rule_id) %}
+      <tr data-sev="{{ v.severity }}">
+        <td class="td-file">{{ v.file | basename }}</td>
+        <td class="td-line">{{ v.line }}</td>
+        <td><span class="badge badge-{{ v.severity }}">{{ v.severity }}</span></td>
+        <td class="td-rule">{{ v.rule_id }}</td>
+        <td>
+          <div>{{ v.description }}</div>
+
+          {% if advice and not advice.error %}
+          <button class="ai-toggle-btn" onclick="togglePanel('panel-{{ loop.index }}', this)">
+            🤖 Voir analyse IA ▶
+          </button>
+          <div class="ai-panel" id="panel-{{ loop.index }}">
+            <div class="ai-panel-section">
+              <div class="ai-panel-label">📋 Explication</div>
+              <div>{{ advice.explication }}</div>
+            </div>
+            <div class="ai-panel-section">
+              <div class="ai-panel-label">💥 Impact</div>
+              <div>{{ advice.impact }}</div>
+            </div>
+            <div class="ai-panel-section">
+              <div class="ai-panel-label">🔧 Correction suggérée</div>
+              <pre>{{ advice.fix }}</pre>
+            </div>
+          </div>
+          {% elif advice and advice.error %}
+          <div style="font-size:11px;color:var(--red);margin-top:4px">⚠ IA : {{ advice.error }}</div>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% else %}
+
+<div class="empty-state">
+  <div class="empty-icon">✅</div>
+  <div class="empty-title">Aucune vulnérabilité détectée</div>
+  <div class="empty-body">Le code analysé ne présente aucun problème de sécurité connu.</div>
+</div>
+
+{% endif %}
+
+<div class="bottom-actions">
+  <a href="{{ url_for('download', scan_id=scan_id, fmt='html') }}" class="btn btn-ghost">⬇ Rapport HTML</a>
+  <a href="{{ url_for('download', scan_id=scan_id, fmt='md') }}" class="btn btn-ghost">⬇ Rapport Markdown</a>
+  <a href="{{ url_for('index') }}" class="btn btn-primary">↩ Nouveau scan</a>
+</div>
+
+<script>
+function filterTable(sev, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#vuln-table tbody tr').forEach(row => {
+    row.style.display = (sev === 'ALL' || row.dataset.sev === sev) ? '' : 'none';
+  });
+}
+
+function togglePanel(id, btn) {
+  const panel = document.getElementById(id);
+  const open  = panel.classList.toggle('open');
+  btn.textContent = open ? '🤖 Masquer analyse IA ▼' : '🤖 Voir analyse IA ▶';
+}
+</script>
+{% endblock %}

@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+{% block title %}APSA — Historique{% endblock %}
+
+{% block extra_styles %}
+.hist-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+.hist-title { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+.hist-sub   { color: var(--text-dim); font-size: 12px; }
+
+/* ── Stats cards ── */
+.hist-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+.hist-stat-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+}
+.hist-stat-value {
+  font-family: var(--mono);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--cyan);
+}
+.hist-stat-label {
+  color: var(--text-dim);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-top: 4px;
+}
+
+/* ── Mini trend chart ── */
+.trend-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 18px 20px;
+  margin-bottom: 28px;
+}
+.trend-title {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.trend-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 60px;
+}
+.trend-bar {
+  flex: 1;
+  background: var(--cyan);
+  border-radius: 2px 2px 0 0;
+  min-height: 3px;
+  opacity: .7;
+  transition: opacity .15s;
+  position: relative;
+}
+.trend-bar:hover { opacity: 1; }
+.trend-bar.grade-A { background: var(--green); }
+.trend-bar.grade-B { background: var(--yellow); }
+.trend-bar.grade-C { background: var(--orange); }
+.trend-bar.grade-D,
+.trend-bar.grade-F { background: var(--red); }
+.trend-labels {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+.trend-labels span {
+  flex: 1;
+  text-align: center;
+  font-size: 9px;
+  color: var(--text-dim);
+  font-family: var(--mono);
+}
+
+/* ── Scan cards ── */
+.scan-list { display: flex; flex-direction: column; gap: 10px; }
+.scan-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  transition: border-color .15s;
+}
+.scan-card:hover { border-color: var(--cyan); }
+
+.scan-grade {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--mono);
+  font-size: 18px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.grade-A { color: var(--green);  border-color: var(--green);  }
+.grade-B { color: var(--yellow); border-color: var(--yellow); }
+.grade-C { color: var(--orange); border-color: var(--orange); }
+.grade-D { color: var(--red);    border-color: var(--red);    }
+.grade-F { color: var(--red);    border-color: var(--red-dark); background: #1a0505; }
+
+.scan-info { flex: 1; min-width: 0; }
+.scan-files {
+  font-family: var(--mono);
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.scan-meta {
+  color: var(--text-dim);
+  font-size: 11px;
+  margin-top: 3px;
+}
+.scan-sevs {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.scan-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.scan-btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 6px;
+  text-decoration: none;
+  border: 1px solid var(--border);
+  background: var(--bg3);
+  color: var(--text);
+  cursor: pointer;
+}
+.scan-btn-sm:hover { border-color: var(--cyan); }
+.scan-btn-danger:hover { border-color: var(--red); color: var(--red); }
+
+.empty-state {
+  text-align: center;
+  padding: 64px 32px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.empty-icon  { font-size: 48px; margin-bottom: 16px; }
+.empty-title { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+.empty-body  { color: var(--text-dim); font-size: 13px; }
+
+.clear-btn {
+  font-size: 12px;
+  color: var(--text-dim);
+  cursor: pointer;
+  background: none;
+  border: none;
+  text-decoration: underline;
+}
+.clear-btn:hover { color: var(--red); }
+{% endblock %}
+
+{% block content %}
+<div class="hist-header">
+  <div>
+    <div class="hist-title">📜 Historique des scans</div>
+    <div class="hist-sub">Tous les scans effectués, persistés localement (SQLite)</div>
+  </div>
+  {% if scans %}
+  <form method="POST" action="{{ url_for('history_clear') }}"
+        onsubmit="return confirm('Supprimer tout l\'historique ? Cette action est irréversible.')">
+    <button type="submit" class="clear-btn">Tout effacer</button>
+  </form>
+  {% endif %}
+</div>
+
+{% if scans %}
+
+<div class="hist-stats">
+  <div class="hist-stat-card">
+    <div class="hist-stat-value">{{ stats.total_scans }}</div>
+    <div class="hist-stat-label">Scans effectués</div>
+  </div>
+  <div class="hist-stat-card">
+    <div class="hist-stat-value">{{ stats.total_issues }}</div>
+    <div class="hist-stat-label">Vulnérabilités trouvées (total)</div>
+  </div>
+  <div class="hist-stat-card">
+    <div class="hist-stat-value">{{ stats.avg_score }}</div>
+    <div class="hist-stat-label">Score moyen / 100</div>
+  </div>
+</div>
+
+{% if stats.trend|length > 1 %}
+<div class="trend-card">
+  <div class="trend-title">Évolution du score de risque</div>
+  <div class="trend-chart">
+    {% for point in stats.trend %}
+    <div class="trend-bar" style="height: {{ (point.score / 100 * 56)|round|int + 3 }}px"
+         title="{{ point.date }} — score {{ point.score }}"></div>
+    {% endfor %}
+  </div>
+  <div class="trend-labels">
+    {% for point in stats.trend %}
+    <span>{{ point.date }}</span>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<div class="scan-list">
+  {% for s in scans %}
+  <div class="scan-card">
+    <div class="scan-grade grade-{{ s.grade }}">{{ s.grade }}</div>
+    <div class="scan-info">
+      <div class="scan-files">{{ s.file_names | join(', ') }}</div>
+      <div class="scan-meta">
+        {{ s.scanned_at.strftime('%d/%m/%Y à %H:%M') }}
+        &nbsp;·&nbsp; {{ s.total_issues }} vulnérabilité{{ 's' if s.total_issues != 1 else '' }}
+        &nbsp;·&nbsp; score {{ s.score }}/100
+      </div>
+    </div>
+    <div class="scan-sevs">
+      {% for sev in ['CRITICAL', 'HIGH', 'MEDIUM', 'LOW'] %}
+      {% if s.by_severity.get(sev, 0) > 0 %}
+      <span class="badge badge-{{ sev }}">{{ s.by_severity[sev] }}</span>
+      {% endif %}
+      {% endfor %}
+    </div>
+    <div class="scan-actions">
+      <a href="{{ url_for('results', scan_id=s.scan_id) }}" class="scan-btn-sm">Voir</a>
+      <form method="POST" action="{{ url_for('history_delete', scan_id=s.scan_id) }}"
+            onsubmit="return confirm('Supprimer ce scan de l\'historique ?')">
+        <button type="submit" class="scan-btn-sm scan-btn-danger">🗑</button>
+      </form>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% else %}
+
+<div class="empty-state">
+  <div class="empty-icon">📭</div>
+  <div class="empty-title">Aucun scan dans l'historique</div>
+  <div class="empty-body">Lance ton premier scan pour commencer à suivre l'évolution de ton code.</div>
+  <div style="margin-top:20px">
+    <a href="{{ url_for('index') }}" class="btn btn-primary">▶ Lancer un scan</a>
+  </div>
+</div>
+
+{% endif %}
+{% endblock %}
